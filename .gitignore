@@ -1,0 +1,5 @@
+data/*.jpg
+data/*.jpeg
+data/*.png
+classifier.xml
+__pycache__/

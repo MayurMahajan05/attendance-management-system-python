@@ -793,9 +793,10 @@ class Student:
                 self.fetch_data()
                 conn.close()
 
-                face_classifier = cv2.CascadeClassifier(
-                    "haarcascade_frontalface_default.xml"
-                )
+                # face_classifier = cv2.CascadeClassifier( "haarcascade_frontalface_default.xml")
+                # This pulls the file directly from your site-packages where cv2 is installed
+                haar_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+                face_classifier = cv2.CascadeClassifier(haar_path)
 
                 def face_cropped(img):
 
@@ -822,9 +823,25 @@ class Student:
                         face = cv2.resize(cropped_img, (450, 450))
                         face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
 
-                        file_name_path = f"data/user.{self.var_std_id.get()}.{img_id}.jpg"
+                        # 1. Get the absolute path to your project folder
+                        base_path = os.path.dirname(os.path.abspath(__file__))
 
+                        # 2. Make sure it points to the 'data' subfolder
+                        data_dir = os.path.join(base_path, "data")
+
+                        # 3. Create the folder if it somehow doesn't exist
+                        if not os.path.exists(data_dir):
+                            os.makedirs(data_dir)
+
+                        # 4. Construct the full file path
+                        file_name_path = os.path.join(data_dir, f"user.{self.var_std_id.get()}.{img_id}.jpg")
+
+                        # 5. Save the image
                         cv2.imwrite(file_name_path, face)
+
+                        # file_name_path = f"data/user.{self.var_std_id.get()}.{img_id}.jpg"
+
+                        # cv2.imwrite(file_name_path, face)
 
                         cv2.putText(
                             face,
