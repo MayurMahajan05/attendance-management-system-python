@@ -1,5 +1,6 @@
 data/*.jpg
 data/*.jpeg
 data/*.png
+*.csv
 classifier.xml
 __pycache__/
