@@ -6,6 +6,10 @@ from student import Student
 from train import Train
 from face_recognition import Face_Recognition
 from tkinter import messagebox
+from attendance import Attendance
+from developer import Developer
+from help import Help
+from time import strftime
 
 # main.py formatted
 
@@ -58,6 +62,18 @@ class Face_Recognition_System:
         )
         title_lbl.place(x=0, y=0, width=1530, height=45)
 
+
+        # ============== Time =================
+
+        def time():
+            string = strftime('%H:%M:%S %p')
+            lbl.config(text=string)
+            lbl.after(1000,time)
+        
+        lbl=Label(title_lbl,font=('times new roman',14,'bold'),background='white',foreground='blue')
+        lbl.place(x=0,y=(-15),width=110,height=50)
+        time()
+
         # ---------------- ROW 1 ---------------- #
 
         # Student button
@@ -102,7 +118,7 @@ class Face_Recognition_System:
         img6 = img6.resize((220, 220), Image.LANCZOS)
 
         self.photoimg6 = ImageTk.PhotoImage(img6)
-        b1 = Button(bg_img, image=self.photoimg6, cursor="hand2")
+        b1 = Button(bg_img, image=self.photoimg6, cursor="hand2",command=self.attendance_data)
         b1.place(x=800, y=100, width=220, height=220)
 
         b1_1 = Button(
@@ -111,7 +127,8 @@ class Face_Recognition_System:
             cursor="hand2",
             font=("times new roman", 15, "bold"),
             bg="darkblue",
-            fg="white"
+            fg="white",
+            command=self.attendance_data
         )
         b1_1.place(x=800, y=300, width=220, height=40)
 
@@ -121,7 +138,7 @@ class Face_Recognition_System:
         img7 = img7.resize((220, 220), Image.LANCZOS)
 
         self.photoimg7 = ImageTk.PhotoImage(img7)
-        b1 = Button(bg_img, image=self.photoimg7, cursor="hand2")
+        b1 = Button(bg_img, image=self.photoimg7, cursor="hand2" , command=self.help_data)
         b1.place(x=1100, y=100, width=220, height=220)
 
         b1_1 = Button(
@@ -130,7 +147,7 @@ class Face_Recognition_System:
             cursor="hand2",
             font=("times new roman", 15, "bold"),
             bg="darkblue",
-            fg="white"
+            fg="white" , command=self.help_data
         )
         b1_1.place(x=1100, y=300, width=220, height=40)
 
@@ -182,7 +199,7 @@ class Face_Recognition_System:
         img10 = img10.resize((220, 220), Image.LANCZOS)
 
         self.photoimg10 = ImageTk.PhotoImage(img10)
-        b1 = Button(bg_img, image=self.photoimg10, cursor="hand2")
+        b1 = Button(bg_img, image=self.photoimg10,command=self.developer_data, cursor="hand2")
         b1.place(x=800, y=380, width=220, height=220)
 
         b1_1 = Button(
@@ -191,6 +208,7 @@ class Face_Recognition_System:
             cursor="hand2",
             font=("times new roman", 15, "bold"),
             bg="darkblue",
+            command=self.developer_data,
             fg="white"
         )
         b1_1.place(x=800, y=580, width=220, height=40)
@@ -246,6 +264,18 @@ class Face_Recognition_System:
 
         if result:
             self.root.destroy()
+
+    def attendance_data(self):
+        self.new_window=Toplevel(self.root)
+        self.app=Attendance(self.new_window)
+
+    def developer_data(self):
+        self.new_window=Toplevel(self.root)
+        self.app=Developer(self.new_window)
+
+    def help_data(self):
+        self.new_window=Toplevel(self.root)
+        self.app=Help(self.new_window)
 
 
 if __name__ == "__main__":
