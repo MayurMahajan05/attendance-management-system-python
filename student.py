@@ -4,6 +4,7 @@ import os
 from PIL import Image, ImageTk
 import mysql.connector
 import cv2
+import re
 
 # student.py formatted , take photo sample needs attention
  
@@ -31,6 +32,13 @@ class Student:
         self.var_phone = StringVar()
         self.var_address = StringVar()
         self.var_teacher = StringVar()
+
+        # --- CONFIGURATION SECTION ---
+        LIST_DEPARTMENTS = ["Select Department", "Computer", "IT", "Civil","Civil & Infra","Chemical","Humanities" ,"AI & DS" , "Mechanical", "Electronics"]
+        LIST_COURSES = ["Select Course", "FE", "SE", "TE", "BE"]
+        LIST_YEARS = ["Select Year", "2022-23", "2023-24", "2024-25", "2025-26", "2026-27"]
+        LIST_SEMESTERS = ["Select Semester", "Sem-1", "Sem-2", "Sem-3", "Sem-4", "Sem-5", "Sem-6", "Sem-7", "Sem-8"]
+        LIST_DIVISIONS = ["Select Division", "A", "B", "C"]
 
         # Stanford img
         img_path = os.path.join(os.path.dirname(__file__), "college_images", "Stanford.jpg")
@@ -135,9 +143,9 @@ class Student:
             current_course_frame,
             textvariable=self.var_dep,
             font=("times new roman", 12, "bold"),
-            state="readonly"
+            state="readonly" ,
+            values=LIST_DEPARTMENTS
         )
-        dep_combo["values"] = ("Select Department", "Comps", "IT", "Civil", "Mech")
         dep_combo.current(0)
         dep_combo.grid(row=0, column=1, padx=5, pady=10, sticky=W)
 
@@ -154,9 +162,9 @@ class Student:
             current_course_frame,
             textvariable=self.var_course,
             font=("times new roman", 13, "bold"),
-            state="readonly"
+            state="readonly",
+            values=LIST_COURSES
         )
-        course_combo["values"] = ("Select course", "FE", "SE", "TE", "BE")
         course_combo.current(0)
         course_combo.grid(row=0, column=3, padx=2, pady=10, sticky=W)
 
@@ -173,9 +181,9 @@ class Student:
             current_course_frame,
             textvariable=self.var_year,
             font=("times new roman", 13, "bold"),
-            state="readonly"
+            state="readonly",
+            values=LIST_YEARS
         )
-        year_combo["values"] = ("Select Year", "2020-2021", "2021-2022", "2022-2023", "2023-2024")
         year_combo.current(0)
         year_combo.grid(row=1, column=1, padx=2, pady=10, sticky=W)
 
@@ -192,9 +200,9 @@ class Student:
             current_course_frame,
             textvariable=self.var_semester,
             font=("times new roman", 13, "bold"),
-            state="readonly"
+            state="readonly",
+            values=LIST_SEMESTERS
         )
-        semester_combo["values"] = ("Select Semester", "Semester-1", "Semester-2", "Semester-3", "Semester-4")
         semester_combo.current(0)
         semester_combo.grid(row=1, column=3, padx=2, pady=10, sticky=W)
 
@@ -375,6 +383,10 @@ class Student:
 
         # ============= Search system ================
 
+        # variables
+        self.var_search_combo = StringVar()
+        self.var_search_entry = StringVar()
+
         Search_frame = LabelFrame(
             Right_frame,
             bd=2,
@@ -398,16 +410,18 @@ class Student:
             Search_frame,
             font=("times new roman", 13, "bold"),
             state="readonly",
-            width=15
+            width=15,textvariable=self.var_search_combo
         )
-        search_combo["values"] = ("Select", "Roll_no", "Phone_No")
+        search_combo["values"] = ("StudentId") # Match your DB column names
         search_combo.current(0)
+
         search_combo.grid(row=0, column=1, padx=2, pady=10, sticky=W)
 
         search_entry = ttk.Entry(
             Search_frame,
             width=15,
-            font=("times new roman", 13, "bold")
+            font=("times new roman", 13, "bold"),
+            textvariable=self.var_search_entry
         )
         search_entry.grid(row=0, column=2, padx=10, pady=5, sticky=W)
 
@@ -417,7 +431,8 @@ class Student:
             width=12,
             font=("times new roman", 13, "bold"),
             bg="red",
-            fg="white"
+            fg="white",
+            command=self.search_data
         )
         search_btn.grid(row=0, column=3, padx=4)
 
@@ -427,7 +442,7 @@ class Student:
             width=12,
             font=("times new roman", 13, "bold"),
             bg="red",
-            fg="white"
+            fg="white",command=self.fetch_data
         )
         showAll_btn.grid(row=0, column=4, padx=4)
 
@@ -488,10 +503,103 @@ class Student:
         self.fetch_data()
 
 
-    def add_data(self):
-        if self.var_dep.get() == "Select Department" or self.var_std_name.get() == "" or self.var_std_id.get() == "":
-            messagebox.showerror("Error", "All fields are required", parent=self.root)
 
+# ======== search data function ===========
+    def search_data(self):
+            # We only check the entry field since we are searching by Student_id only
+            if self.var_search_entry.get() == "":
+                messagebox.showerror("Error", "Please enter a Student ID to search", parent=self.root)
+            else:
+                try:
+                    conn = mysql.connector.connect(
+                        host="localhost",
+                        username="root",
+                        password="Bunty@123",
+                        database="face_recognizer"
+                    )
+                    my_cursor = conn.cursor()
+
+                    # Optimized query for Student_id only
+                    # Using LIKE allows partial matches (e.g., searching '2022' shows all from that year)
+                    query = "SELECT * FROM student WHERE Student_id LIKE %s"
+                    val = ('%' + self.var_search_entry.get() + '%',)
+                    
+                    my_cursor.execute(query, val)
+                    data = my_cursor.fetchall()
+
+                    if len(data) != 0:
+                        self.student_table.delete(*self.student_table.get_children())
+                        for i in data:
+                            self.student_table.insert("", END, values=i)
+                        conn.commit()
+                    else:
+                        messagebox.showinfo("No Results", "No student found with this ID", parent=self.root)
+                        
+                    conn.close()
+                except Exception as es:
+                    messagebox.showerror("Error", f"Due to: {str(es)}", parent=self.root)
+
+        # =========== validate input =============
+
+    def validate_inputs(self):
+        # 1. Define the Student ID Pattern (e.g., 2022FHIT030)
+        # Regex breakdown: ^\d{4} (4 digits) [A-Z]{4} (4 uppercase letters) \d{3}$ (3 digits)
+        id_pattern = r'^\d{4}[A-Z]{4}\d{3}$'
+
+        # 2. Check all dropdowns (ensure they aren't on the default "Select" value)
+        dropdown_checks = [
+            (self.var_dep.get(), "Department"),
+            (self.var_course.get(), "Course"),
+            (self.var_year.get(), "Year"),
+            (self.var_semester.get(), "Semester"),
+            (self.var_div.get(), "Division"),
+            (self.var_gender.get(), "Gender")
+        ]
+        
+        for value, name in dropdown_checks:
+            if "Select" in value or value == "":
+                messagebox.showerror("Error", f"Please select a valid {name}", parent=self.root)
+                return False
+
+        # 3. Validate Student ID Format
+        if not re.match(id_pattern, self.var_std_id.get()):
+            messagebox.showerror("Error", "Invalid Student ID format!\nExample: 2022FHIT030", parent=self.root)
+            return False
+
+        # 4. Check Mandatory Text Fields
+        text_checks = [
+            (self.var_std_name.get(), "Student Name"),
+            (self.var_roll.get(), "Roll Number"),
+            (self.var_email.get(), "Email"),
+            (self.var_phone.get(), "Phone Number"),
+            (self.var_address.get(), "Address")
+        ]
+
+        for value, name in text_checks:
+            if value.strip() == "":
+                messagebox.showerror("Error", f"{name} cannot be empty", parent=self.root)
+                return False
+
+        # 5. Advanced Validation: Email and Phone
+        if not re.match(r"^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$", self.var_email.get()):
+            messagebox.showerror("Error", "Invalid Email Format", parent=self.root)
+            return False
+
+        if not self.var_phone.get().isdigit() or len(self.var_phone.get()) != 10:
+            messagebox.showerror("Error", "Phone number must be exactly 10 digits", parent=self.root)
+            return False
+
+        # 6. Check Radio Button (Photo Sample)
+        if not self.var_radio1.get():
+            messagebox.showerror("Error", "Please select whether a photo sample exists", parent=self.root)
+            return False
+
+        return True    
+
+
+    def add_data(self):
+        if not self.validate_inputs():
+                return # Stop if validation fails
         else:
             try:
                 conn = mysql.connector.connect(
@@ -501,6 +609,14 @@ class Student:
                     database="face_recognizer"
                 )
                 my_cursor = conn.cursor()
+
+                my_cursor.execute("SELECT * FROM student WHERE Student_id=%s", (self.var_std_id.get(),))
+                row = my_cursor.fetchone()
+                if row is not None:
+                    messagebox.showerror("Error", "Student ID already exists!", parent=self.root)
+                    conn.close()
+                    return 
+                                # ----------------------
 
                 my_cursor.execute(
                     "INSERT INTO student VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
@@ -532,6 +648,7 @@ class Student:
                     "Student details has been added successfully",
                     parent=self.root
                 )
+                self.reset_data()
 
             except Exception as es:
                 messagebox.showerror(
@@ -540,6 +657,8 @@ class Student:
                     parent=self.root
                 )
 
+
+  
     # ========== Fetch Data =========
 
     def fetch_data(self):

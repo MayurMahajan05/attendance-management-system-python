@@ -85,12 +85,13 @@ class Face_Recognition_System:
         b1 = Button(bg_img, image=self.photoimg4, command=self.student_details, cursor="hand2")
         b1.place(x=200, y=100, width=220, height=220)
 
-        b1_1 = Button(
+        b1_1 = Button(  
             bg_img,
             text="Student Details",
             command=self.student_details,
             cursor="hand2",
-            font=("times new roman", 15, "bold")
+            font=("times new roman", 15, "bold"),bg="darkblue",
+            fg="white"
         )
         b1_1.place(x=200, y=300, width=220, height=40)
 
@@ -108,7 +109,9 @@ class Face_Recognition_System:
             text="Face Detecter",
             cursor="hand2",
             font=("times new roman", 15, "bold"),
-            command=self.face_data
+            command=self.face_data,
+            bg="darkblue",
+            fg="white"
         )
         b1_1.place(x=500, y=300, width=220, height=40)
 

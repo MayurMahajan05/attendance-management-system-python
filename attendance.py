@@ -235,7 +235,7 @@ class Attendance:
             messagebox.showerror("Error",f"Due to :{str(es)}",parent=self.root)
 
 
-    def get_cursor(self):
+    def get_cursor(self,event=""):
         cursor_row = self.AttendanceReportTable.focus()
         content=self.AttendanceReportTable.item(cursor_row)
         rows=content['values']
