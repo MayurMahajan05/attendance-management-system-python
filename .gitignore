@@ -1,6 +1,4 @@
-data/*.jpg
-data/*.jpeg
-data/*.png
-*.csv
-classifier.xml
 __pycache__/
+data/
+classifier.xml
+tempCodeRunnerFile.py

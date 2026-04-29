@@ -151,7 +151,7 @@ class Face_Recognition:
                     
                     # 2. Fetch everything in ONE trip to the database
                     # Make sure these column names (Name, Roll, Dep) match your DB exactly!
-                    query = "SELECT Name, Roll, Dep, Student_id FROM Student WHERE Student_id=%s"
+                    query = "SELECT Name, Roll, Dep, Student_id FROM Student WHERE id=%s"
                     my_cursor.execute(query, (id,))
                     row = my_cursor.fetchone()
 

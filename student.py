@@ -19,6 +19,7 @@ class Student:
 
         # ======= Variables =========
         self.var_dep = StringVar()
+        self.var_id = IntVar() 
         self.var_course = StringVar()
         self.var_year = StringVar()
         self.var_semester = StringVar()
@@ -640,6 +641,7 @@ class Student:
                 )
 
                 conn.commit()
+                generated_id = my_cursor.lastrowid
                 self.fetch_data()
                 conn.close()
 
@@ -670,7 +672,11 @@ class Student:
         )
 
         my_cursor = conn.cursor()
-        my_cursor.execute("select * from student")
+        my_cursor.execute("""
+        SELECT Dep,course,Year,Semester,Student_id,Name,Division,Roll,
+        Gender,Dob,Email,Phone,Address,Teacher
+        FROM student
+        """)
         data = my_cursor.fetchall()
 
         if len(data) != 0:
@@ -907,8 +913,17 @@ class Student:
                 )
 
                 my_cursor.execute(query, values)
-
                 conn.commit()
+
+                # Fetch numeric ID of this student
+                my_cursor.execute(
+                    "SELECT id FROM student WHERE Student_id=%s",
+                    (self.var_std_id.get(),)
+                )
+
+                result = my_cursor.fetchone()
+                generated_id = result[0]
+
                 self.fetch_data()
                 conn.close()
 
@@ -953,7 +968,7 @@ class Student:
                             os.makedirs(data_dir)
 
                         # 4. Construct the full file path
-                        file_name_path = os.path.join(data_dir, f"user.{self.var_std_id.get()}.{img_id}.jpg")
+                        file_name_path = os.path.join(data_dir, f"user.{generated_id}.{img_id}.jpg")
 
                         # 5. Save the image
                         cv2.imwrite(file_name_path, face)
@@ -997,14 +1012,5 @@ if __name__ == "__main__":
     root = Tk()
     obj = Student(root)
     root.mainloop()
-
-
-
-
-
-
-
-
-
 
 
